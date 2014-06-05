@@ -6,9 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var passport = require('passport');
-var LocalStrategy = require('passport-local');
 
-var User = require('./lib/user');
 var routes = require('./routes/index');
 var auth = require('./routes/auth');
 var users = require('./routes/users');
@@ -29,33 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.serializeUser(function (user, done) {
-  done(null, user.id);
-});
 
-passport.deserializeUser(function (id, done) {
-  User.findById(id, function (err, user) {
-    done(err, user);
-  });
-});
-
-
-passport.use(new LocalStrategy(
-  function (username, password, done) {
-    User.findOne({ username: username }, function (err, user) {
-      if (err) {
-        return done(err);
-      }
-      if (!user) {
-        return done(null, false);
-      }
-      if (!user.verifyPassword(password)) {
-        return done(null, false);
-      }
-      return done(null, user);
-    });
-  }
-));
 
 app.use('/', routes);
 app.use('/auth', auth);
