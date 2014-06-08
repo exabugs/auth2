@@ -1,20 +1,35 @@
+/**
+ *
+ * @see
+ * http://www.machu.jp/diary/20110722.html#p01
+ *
+ * @type {_|exports}
+ * @private
+ */
+
+var _ = require('underscore');
 var express = require('express');
 var router = express.Router();
 
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
-//var TwitterStrategy = require('passport-twitter');
+var TwitterStrategy = require('passport-twitter');
+//var GoogleStrategy = require('passport-google').Strategy;
+//var GoogleStrategy = require('passport-google-oauth').OAuthStrategy;
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+
+var FacebookStrategy = require('passport-facebook');
 
 var User = require('../lib/user');
 
+var redirect = { successRedirect: '/users', failureRedirect: '/login' }
+
 passport.serializeUser(function (user, done) {
-  done(null, user.id);
+  done(null, user);
 });
 
-passport.deserializeUser(function (id, done) {
-  User.findById(id, function (err, user) {
-    done(err, user);
-  });
+passport.deserializeUser(function (obj, done) {
+  done(null, obj);
 });
 
 
@@ -41,38 +56,135 @@ router.get('/login', function (req, res) {
 });
 
 router.post('/login',
-  passport.authenticate('local',
-    { successRedirect: '/', failureRedirect: '/' })
+  passport.authenticate('local', redirect)
 );
 
-/*
 
- passport.use(new TwitterStrategy({
- consumerKey: process.env.TWITTER_CONSUMER_KEY,
- consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
- callbackURL: "http://127.0.0.1:3000/auth/twitter/callback"
- },
- function (token, tokenSecret, profile, done) {
- User.findOrCreate({ twitterId: profile.id }, function (err, user) {
- return done(err, user);
- });
- }
- ));
-
- router.get('/twitter', function (req, res) {
- passport.authenticate('twitter');
- });
-
- router.get('/twitter/callback', function (req, res) {
- passport.authenticate('twitter', { failureRedirect: '/login' });
- /*
- function(req, res) {
- // Successful authentication, redirect home.
- res.redirect('/');
- });
-
- });
-
+/**
+ *
+ * Twitter
+ *
  */
+
+passport.use(new TwitterStrategy({
+    consumerKey: process.env.TWITTER_CONSUMER_KEY,
+    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+    callbackURL: "/auth/twitter/callback"
+  },
+  function (token, tokenSecret, profile, done) {
+    User.findOrCreate({ twitterId: profile.id }, function (err, user) {
+      var prop = ['displayName', 'id', 'provider', 'username'];
+      user = _.extend(user, _.pick(profile, prop));
+      return done(err, user);
+    });
+  }
+));
+
+router.get('/twitter', passport.authenticate('twitter'));
+
+router.get('/twitter/callback',
+  passport.authenticate('twitter', redirect)
+);
+
+/**
+ *
+ * Google
+ *
+ */
+/*
+passport.use(new GoogleStrategy({
+    returnURL: '/auth/google/return',
+    realm: '/'
+  },
+  function(identifier, done) {
+    User.findByOpenID({ openId: identifier }, function (err, user) {
+      return done(err, user);
+    });
+  }
+));
+
+router.get('/google', passport.authenticate('google'));
+
+router.get('/google/return',
+  passport.authenticate('google', redirect)
+);
+*/
+
+/**
+ *
+ * Google OAuth
+ *
+ *
+ */
+
+/*
+passport.use(new GoogleStrategy({
+    consumerKey: process.env.GOOGLE_CONSUMER_KEY,
+    consumerSecret: process.env.GOOGLE_CONSUMER_SECRET,
+    callbackURL: "/auth/google/callback"
+  },
+  function(token, tokenSecret, profile, done) {
+    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      return done(err, user);
+    });
+  }
+));
+
+router.get('/google',
+  passport.authenticate('google', { scope: 'https://www.google.com/m8/feeds' }));
+
+router.get('/google/callback',
+  passport.authenticate('google', redirect)
+);
+*/
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret:  process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/auth/google/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      return done(err, user);
+    });
+  }
+));
+
+router.get('/google',
+  passport.authenticate('google', { scope: 'https://www.google.com/m8/feeds' }));
+
+router.get('/google/callback',
+  passport.authenticate('google', redirect)
+);
+
+
+/**
+ *
+ * Facebook
+ *
+ *
+ */
+
+passport.use(new FacebookStrategy({
+    clientID: process.env.FACEBOOK_APP_ID,
+    clientSecret: process.env.FACEBOOK_APP_SECRET,
+    callbackURL: "/auth/facebook/callback",
+    enableProof: false
+  },
+  function(accessToken, refreshToken, profile, done) {
+    User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+      var prop = ['displayName', 'id', 'provider', 'username', 'name', 'gender', 'profileUrl'];
+      user = _.extend(user, _.pick(profile, prop));
+      return done(err, user);
+    });
+  }
+));
+
+router.get('/facebook',
+  passport.authenticate('facebook'));
+
+router.get('/facebook/callback',
+  passport.authenticate('facebook', redirect)
+);
 
 module.exports = router;

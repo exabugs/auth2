@@ -3,6 +3,9 @@ var path = require('path');
 var favicon = require('static-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
+
 var bodyParser = require('body-parser');
 
 var passport = require('passport');
@@ -22,22 +25,38 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(cookieParser());
+app.use(session({
+  secret: 'keyboard cat',
+  store: new MongoStore({
+//    url: 'mongodb://127.0.0.1:27017/test'
+    stringify: false,
+    db : 'test'
+  })
+}));
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-
 app.use('/', routes);
 app.use('/auth', auth);
+
+
+// リクエストがあったとき、ログイン済みかどうか確認する関数
+app.use(function (req, res, next) {
+  if (req.isAuthenticated()) {
+    next();  // ログイン済み
+  } else {
+    res.redirect("/auth/login");    // ログインしてなかったらログイン画面に飛ばす
+  }
+});
+
 app.use('/users', users);
 
 /// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
+app.use(function (req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
 });
 
 /// error handlers
@@ -45,25 +64,24 @@ app.use(function(req, res, next) {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
+  app.use(function (err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: err
     });
+  });
 }
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
+app.use(function (err, req, res, next) {
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: {}
+  });
 });
-
 
 
 module.exports = app;
