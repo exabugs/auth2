@@ -33,6 +33,9 @@ passport.deserializeUser(function (obj, done) {
 });
 
 
+
+
+
 passport.use(new LocalStrategy(
   function (username, password, done) {
     User.findOne({ username: username }, function (err, user) {
@@ -53,6 +56,11 @@ passport.use(new LocalStrategy(
 
 router.get('/login', function (req, res) {
   res.render('login', { title: 'Express' });
+});
+
+router.get('/logout', function(req, res) {
+  req.logout();
+  res.redirect('/login');
 });
 
 router.post('/login',
