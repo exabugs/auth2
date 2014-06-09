@@ -3,6 +3,13 @@ extends layout
 block content
   h1= title
 
+  table
+    tr
+      td
+        a(href="/") Home
+      td
+        a(href="/users") Users
+
   -if (session.views === 1) {
     p welcome to the session demo. refresh!
   -} else {
