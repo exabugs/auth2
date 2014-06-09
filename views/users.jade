@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  h1= title
+
+  -if (session.views === 1) {
+    p welcome to the session demo. refresh!
+  -} else {
+    p Views: #{session.views}
+      a(href="/users") [Refresh]
+    p expires in: #{session.cookie.maxAge / 1000}s
+  -}
+
+  -if (req.isAuthenticated()) {
+    p Authenticated!!
+  -} else {
+    p Not Authenticated.
+  -}
+
+  p respond with a resource
+
+  p: a(href="/auth/logout") Logout

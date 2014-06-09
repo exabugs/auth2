@@ -33,9 +33,6 @@ passport.deserializeUser(function (obj, done) {
 });
 
 
-
-
-
 passport.use(new LocalStrategy(
   function (username, password, done) {
     User.findOne({ username: username }, function (err, user) {
@@ -58,9 +55,9 @@ router.get('/login', function (req, res) {
   res.render('login', { title: 'Express' });
 });
 
-router.get('/logout', function(req, res) {
+router.get('/logout', function (req, res) {
   req.logout();
-  res.redirect('/login');
+  res.redirect('/');
 });
 
 router.post('/login',
@@ -100,23 +97,23 @@ router.get('/twitter/callback',
  *
  */
 /*
-passport.use(new GoogleStrategy({
-    returnURL: '/auth/google/return',
-    realm: '/'
-  },
-  function(identifier, done) {
-    User.findByOpenID({ openId: identifier }, function (err, user) {
-      return done(err, user);
-    });
-  }
-));
+ passport.use(new GoogleStrategy({
+ returnURL: '/auth/google/return',
+ realm: '/'
+ },
+ function(identifier, done) {
+ User.findByOpenID({ openId: identifier }, function (err, user) {
+ return done(err, user);
+ });
+ }
+ ));
 
-router.get('/google', passport.authenticate('google'));
+ router.get('/google', passport.authenticate('google'));
 
-router.get('/google/return',
-  passport.authenticate('google', redirect)
-);
-*/
+ router.get('/google/return',
+ passport.authenticate('google', redirect)
+ );
+ */
 
 /**
  *
@@ -126,40 +123,49 @@ router.get('/google/return',
  */
 
 /*
-passport.use(new GoogleStrategy({
-    consumerKey: process.env.GOOGLE_CONSUMER_KEY,
-    consumerSecret: process.env.GOOGLE_CONSUMER_SECRET,
-    callbackURL: "/auth/google/callback"
-  },
-  function(token, tokenSecret, profile, done) {
-    User.findOrCreate({ googleId: profile.id }, function (err, user) {
-      return done(err, user);
-    });
-  }
-));
+ passport.use(new GoogleStrategy({
+ consumerKey: process.env.GOOGLE_CONSUMER_KEY,
+ consumerSecret: process.env.GOOGLE_CONSUMER_SECRET,
+ callbackURL: "/auth/google/callback"
+ },
+ function(token, tokenSecret, profile, done) {
+ User.findOrCreate({ googleId: profile.id }, function (err, user) {
+ return done(err, user);
+ });
+ }
+ ));
 
-router.get('/google',
-  passport.authenticate('google', { scope: 'https://www.google.com/m8/feeds' }));
+ router.get('/google',
+ passport.authenticate('google', { scope: 'https://www.google.com/m8/feeds' }));
 
-router.get('/google/callback',
-  passport.authenticate('google', redirect)
-);
-*/
+ router.get('/google/callback',
+ passport.authenticate('google', redirect)
+ );
+ */
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret:  process.env.GOOGLE_CLIENT_SECRET,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "/auth/google/callback"
   },
-  function(accessToken, refreshToken, profile, done) {
+  function (accessToken, refreshToken, profile, done) {
     User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      var prop = ['displayName', 'id', 'provider', 'username', 'name', 'emails'];
+      user = _.extend(user, _.pick(profile, prop));
       return done(err, user);
     });
   }
 ));
 
+
+var google_scope = [
+  'https://www.google.com/m8/feeds',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile'
+];
+
 router.get('/google',
-  passport.authenticate('google', { scope: 'https://www.google.com/m8/feeds' }));
+  passport.authenticate('google', { scope: google_scope.join(' ') }));
 
 router.get('/google/callback',
   passport.authenticate('google', redirect)
@@ -179,7 +185,7 @@ passport.use(new FacebookStrategy({
     callbackURL: "/auth/facebook/callback",
     enableProof: false
   },
-  function(accessToken, refreshToken, profile, done) {
+  function (accessToken, refreshToken, profile, done) {
     User.findOrCreate({ facebookId: profile.id }, function (err, user) {
       var prop = ['displayName', 'id', 'provider', 'username', 'name', 'gender', 'profileUrl'];
       user = _.extend(user, _.pick(profile, prop));

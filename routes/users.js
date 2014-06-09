@@ -21,10 +21,13 @@ router.get('/', function(req, res) {
   message.push('<p>respond with a resource</p>');
 
   message.push('<p><a href="/auth/logout" >Logout</a></p>');
-
+/*
   res.setHeader('Content-Type', 'text/html');
   res.write(message.join('\n'));
   res.end();
+*/
+  res.render('users', { title: 'Users', session: req.session, req: req });
+
 });
 
 module.exports = router;
