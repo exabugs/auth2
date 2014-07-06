@@ -20,6 +20,8 @@ var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 var FacebookStrategy = require('passport-facebook');
 
+var OAuth2Strategy = require('passport-oauth2');
+
 var User = require('../lib/user');
 
 var redirect = { successRedirect: '/users', failureRedirect: '/login' }
@@ -67,6 +69,43 @@ router.post('/login',
 
 /**
  *
+ * Chiwawa
+ *
+ */
+
+passport.use(new OAuth2Strategy({
+    authorizationURL: 'http://localhost:3001/oauth2/authorize',
+    tokenURL: 'http://localhost:3001/oauth2/token',
+//    authorizationURL: 'http://localhost:3002/dialog/authorize',
+//    tokenURL: 'http://localhost:3002/oauth/token',
+    clientID: 'abc123',
+    clientSecret: 'ssh-secret',
+    callbackURL: "/auth/chiwawa/callback"
+  },
+  function (accessToken, refreshToken, profile, done) {
+    profile.chiwawa = profile.chiwawa || {};
+    profile.chiwawa.accessToken = accessToken;
+    profile.chiwawa.refreshToken = refreshToken;
+
+    process.nextTick(function () {
+      return done(null, profile);
+    });
+/*
+    User.findOrCreate({ exampleId: profile.id }, function (err, user) {
+      return done(err, user);
+    });
+*/
+  }
+));
+
+router.get('/chiwawa',
+  passport.authenticate('oauth2'));
+
+router.get('/chiwawa/callback',
+  passport.authenticate('oauth2', redirect));
+
+/**
+ *
  * Twitter
  *
  */
@@ -85,11 +124,11 @@ passport.use(new TwitterStrategy({
   }
 ));
 
-router.get('/twitter', passport.authenticate('twitter'));
+router.get('/twitter',
+  passport.authenticate('twitter'));
 
 router.get('/twitter/callback',
-  passport.authenticate('twitter', redirect)
-);
+  passport.authenticate('twitter', redirect));
 
 /**
  *
@@ -168,8 +207,7 @@ router.get('/google',
   passport.authenticate('google', { scope: google_scope.join(' ') }));
 
 router.get('/google/callback',
-  passport.authenticate('google', redirect)
-);
+  passport.authenticate('google', redirect));
 
 
 /**
@@ -198,7 +236,6 @@ router.get('/facebook',
   passport.authenticate('facebook'));
 
 router.get('/facebook/callback',
-  passport.authenticate('facebook', redirect)
-);
+  passport.authenticate('facebook', redirect));
 
 module.exports = router;

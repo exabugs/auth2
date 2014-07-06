@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 /* GET users listing. */
-router.get('/', function(req, res) {
+router.get('/', function (req, res) {
   var message = [];
   var sess = req.session;
   if (sess.views) {
@@ -21,13 +21,31 @@ router.get('/', function(req, res) {
   message.push('<p>respond with a resource</p>');
 
   message.push('<p><a href="/auth/logout" >Logout</a></p>');
-/*
-  res.setHeader('Content-Type', 'text/html');
-  res.write(message.join('\n'));
-  res.end();
-*/
+  /*
+   res.setHeader('Content-Type', 'text/html');
+   res.write(message.join('\n'));
+   res.end();
+   */
   res.render('users', { title: 'Users', session: req.session, req: req });
 
+});
+
+var passport = require('passport');
+
+
+router.get('/chiwawa', function (req, res) {
+  // search tweets.
+  var chiwawa = req.session.passport.user.chiwawa;
+  passport._strategies.oauth2._oauth2.get(
+    'http://localhost:3001/files',
+    chiwawa.accessToken,
+    function (err, data, response) {
+      if (err) {
+        res.send(err, 500);
+        return;
+      }
+      res.send(data);
+    });
 });
 
 module.exports = router;
