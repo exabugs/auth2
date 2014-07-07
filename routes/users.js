@@ -38,7 +38,7 @@ router.get('/oauth_list', function (req, res) {
   var chiwawa = req.session.passport.user.chiwawa;
 //  passport._strategies.oauth2._oauth2.useAuthorizationHeaderforGET(true);
   passport._strategies.oauth2._oauth2.get(
-    'http://door.tokyo.dreamarts.co.jp:3900/users/oauth_list',
+    process.env.CHIWAWA_URI + '/users',
     chiwawa.accessToken,
     function (err, data, response) {
       if (err) {

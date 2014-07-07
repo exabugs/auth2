@@ -74,10 +74,8 @@ router.post('/login',
  */
 
 passport.use(new OAuth2Strategy({
-    authorizationURL: 'http://door.tokyo.dreamarts.co.jp:3900/oauth2/authorize',
-    tokenURL: 'http://door.tokyo.dreamarts.co.jp:3900/oauth2/token',
-//    authorizationURL: 'http://localhost:3002/dialog/authorize',
-//    tokenURL: 'http://localhost:3002/oauth/token',
+    authorizationURL: process.env.CHIWAWA_URI + '/oauth2/authorize',
+    tokenURL: process.env.CHIWAWA_URI + '/oauth2/token',
     clientID: 'abc123',
     clientSecret: 'ssh-secret',
     callbackURL: "/auth/chiwawa/callback"
