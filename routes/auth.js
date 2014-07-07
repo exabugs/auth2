@@ -74,8 +74,8 @@ router.post('/login',
  */
 
 passport.use(new OAuth2Strategy({
-    authorizationURL: 'http://localhost:3001/oauth2/authorize',
-    tokenURL: 'http://localhost:3001/oauth2/token',
+    authorizationURL: 'http://door.tokyo.dreamarts.co.jp:3900/oauth2/authorize',
+    tokenURL: 'http://door.tokyo.dreamarts.co.jp:3900/oauth2/token',
 //    authorizationURL: 'http://localhost:3002/dialog/authorize',
 //    tokenURL: 'http://localhost:3002/oauth/token',
     clientID: 'abc123',

@@ -33,11 +33,12 @@ router.get('/', function (req, res) {
 var passport = require('passport');
 
 
-router.get('/chiwawa', function (req, res) {
+router.get('/oauth_list', function (req, res) {
   // search tweets.
   var chiwawa = req.session.passport.user.chiwawa;
+//  passport._strategies.oauth2._oauth2.useAuthorizationHeaderforGET(true);
   passport._strategies.oauth2._oauth2.get(
-    'http://localhost:3001/files',
+    'http://door.tokyo.dreamarts.co.jp:3900/users/oauth_list',
     chiwawa.accessToken,
     function (err, data, response) {
       if (err) {
